@@ -585,4 +585,407 @@ The goal is to build a useful, reliable, real-world product.
 
 ---
 
-# END OF CLAUDE DEVELOPMENT INSTRUCTIONS
+# 27. Current Project Progress / Implementation Status
+
+## STUDENT-FACING FEATURES
+✅ **Homepage** - Fully implemented modern landing page with responsive educational/SaaS UI, purple/indigo visual theme, hero section, feature highlights, statistics, CTA sections, and QR code display
+✅ **Student Dashboard** - Complete with personalized welcome, subject statistics, quiz statistics, average score, study streak, recent quiz activity, Supabase integration, loading/error states
+✅ **Student Profile** - View/edit profile with form validation, role/academic information, save/cancel functionality, client component conversion completed
+✅ **Syllabus** - Subjects filtered by student's branch/semester, responsive subject cards, loading/error/empty states
+✅ **Free Period Mode** - Time selection, quiz filtering by estimated time, quiz start functionality, responsive UI
+✅ **Academic Navigation** - Complete student-facing hierarchy implemented:
+  - Dashboard → Subjects → Subject Detail → Unit Detail → Topic → Topic Quizzes → Quiz Detail → Start Quiz → Quiz Attempt → Quiz Submission → Quiz Results
+  - Routes implemented: /subjects, /subjects/[subjectId], /subjects/[subjectId]/units/[unitId], /topics/[topicId]/quizzes, /quiz/[quizId], /quiz-attempts/new?quizId=..., /quiz-attempts/[attemptId], /quiz-attempts/[attemptId]/results
+✅ **Quiz System** - Complete student-facing quiz system:
+  - Quiz detail page, branch/semester access validation, quiz attempt creation
+  - Quiz taking interface with question navigation, answer selection, timer
+  - Automatic submission on timer expiration, quiz scoring, percentage/pass-fail calculation
+  - Individual answer persistence, quiz results with answer review
+  - Attempt history displayed on dashboard
+  - Quiz attempt creation flow implemented via /app/(student)/quiz-attempts/new/page.tsx and /lib/actions/quiz.ts
+
+## ADMIN MANAGEMENT FEATURES
+✅ **Branch Management** - Full CRUD complete:
+  - Routes: /admin/branches, /admin/branches/new, /admin/branches/[branchId]/edit
+  - Features: Admin-only auth, name/code/description fields, automatic uppercase branch codes
+  - Dependency-safe deletion (prevents deletion when semesters exist), loading/error/success states
+
+✅ **Semester Management** - Full CRUD complete:
+  - Routes: /admin/semesters, /admin/semesters/new, /admin/semesters/[semesterId]/edit
+  - Features: Branch selection, required name/number/branch, positive integer validation
+  - Duplicate semester prevention within same branch, prevents deletion when subjects exist
+  - Admin-only authorization, loading/error/empty/success states
+
+✅ **Subject Management** - Full CRUD complete:
+  - Routes: /admin/subjects, /admin/subjects/new, /admin/subjects/[subjectId]/edit
+  - Features: Semester selection, optional code/description, duplicate name prevention per semester
+  - Prevents deletion when units exist, displays semester/branch relationships
+  - Admin-only authorization
+
+✅ **Unit Management** - Full CRUD complete:
+  - Routes: /admin/units, /admin/units/new, /admin/units/[unitId]/edit
+  - Features: Subject selection, required name/subject, optional description
+  - Prevents deletion when topics exist, displays subject/semester/branch relationships
+  - Admin-only authorization
+
+✅ **Topic Management** - Full CRUD complete:
+  - Routes: /admin/topics, /admin/topics/new, /admin/topics/[topicId]/edit
+  - Features: Unit selection, required name/unit, optional description
+  - Duplicate topic name prevention within same unit, prevents deletion when quizzes exist
+  - Displays unit/subject/semester/branch relationships, admin-only authorization
+  - Loading/error/empty/success states
+
+## ADMIN HIERARCHY STATUS
+✅ Branch → ✅ Semester → ✅ Subject → ✅ Unit → ✅ Topic → ✅ Quiz → ✅ Questions
+
+## NEXT PLANNED FEATURE
+**ADMIN QUESTION MANAGEMENT** - COMPLETED
+- Routes: /admin/questions, /admin/questions/new, /admin/questions/[questionId]/edit
+- Features: Full CRUD implementation with validation, duplicate prevention, dependency safety
+- Status: FULLY IMPLEMENTED
+
+## FOLLOWING FEATURES (After Question Management)
+- Announcements
+- Class Routines  
+- User Management (if required)
+
+## IMPORTANT DEVELOPMENT RULES (REITERATED)
+- Follow established admin CRUD patterns from Branch/Semester/Subject/Unit/Topic Management
+- Reuse existing authentication and admin role-checking patterns
+- Reuse existing Supabase query patterns
+- Maintain existing ClassQuest UI/UX and Tailwind styling
+- Respect existing database schema exactly (do not invent fields)
+- Do not modify unrelated files
+- Do not fix unrelated bugs during feature implementation
+- Do not implement future features unless explicitly requested
+- Before implementing new features, inspect actual database schema and existing student-facing code
+- Report files created/modified, functionality implemented, validation checks, dependency checks, and build results when available
+
+## CURRENT DEVELOPMENT STATE
+- **Student Core Experience**: ~95% complete
+- **Admin Content Management**: Completed academic hierarchy
+  - Completed: Branch → Semester → Subject → Unit → Topic → Quiz → Question
+  - Next major feature: Announcements
+
+==================================================
+28. Current Project Progress / Session Handoff
+==================================================
+
+## 28.1 PROJECT OVERVIEW
+ClassQuest is a Next.js + TypeScript + Tailwind CSS + Supabase academic/quiz platform.
+
+The project contains:
+- Student-facing features
+- Admin content management
+- Authentication
+- Academic hierarchy
+- Quiz system
+
+## 28.2 COMPLETED STUDENT-FACING FEATURES
+✅ **Homepage** - Fully implemented modern landing page with responsive educational/SaaS UI, purple/indigo visual theme, hero section, feature highlights, statistics, CTA sections, and QR code display
+✅ **Student Dashboard** - Complete with personalized welcome, subject statistics, quiz statistics, average score, study streak, recent quiz activity, Supabase integration, loading/error states
+✅ **Student Profile** - View/edit profile with form validation, role/academic information, save/cancel functionality, client component conversion completed
+✅ **Syllabus** - Subjects filtered by student's branch/semester, responsive subject cards, loading/error/empty states
+✅ **Free Period Mode** - Time selection, quiz filtering by estimated time, quiz start functionality, responsive UI
+✅ **Academic Navigation** - Complete student-facing hierarchy implemented:
+  - Dashboard → Subjects → Subject Detail → Unit Detail → Topic → Topic Quizzes → Quiz Detail → Start Quiz → Quiz Attempt → Quiz Submission → Quiz Results
+  - Routes implemented: /subjects, /subjects/[subjectId], /subjects/[subjectId]/units/[unitId], /topics/[topicId]/quizzes, /quiz/[quizId], /quiz-attempts/new?quizId=..., /quiz-attempts/[attemptId], /quiz-attempts/[attemptId]/results
+✅ **Quiz System** - Complete student-facing quiz system:
+  - Quiz detail page, branch/semester access validation, quiz attempt creation
+  - Quiz taking interface with question navigation, answer selection, timer
+  - Automatic submission on timer expiration, quiz scoring, percentage/pass-fail calculation
+  - Individual answer persistence, quiz results with answer review
+  - Attempt history displayed on dashboard
+  - Quiz attempt creation flow implemented via /app/(student)/quiz-attempts/new/page.tsx and /lib/actions/quiz.ts
+
+## 28.3 COMPLETED ADMIN CONTENT MANAGEMENT
+✅ **Branch Management** - Full CRUD complete:
+  - Routes: /admin/branches, /admin/branches/new, /admin/branches/[branchId]/edit
+  - Features: Admin-only auth, name/code/description fields, automatic uppercase branch codes
+  - Dependency-safe deletion (prevents deletion when semesters exist), loading/error/success states
+
+✅ **Semester Management** - Full CRUD complete:
+  - Routes: /admin/semesters, /admin/semesters/new, /admin/semesters/[semesterId]/edit
+  - Features: Branch selection, required name/number/branch, positive integer validation
+  - Duplicate semester prevention within same branch, prevents deletion when subjects exist
+  - Admin-only authorization, loading/error/empty/success states
+
+✅ **Subject Management** - Full CRUD complete:
+  - Routes: /admin/subjects, /admin/subjects/new, /admin/subjects/[subjectId]/edit
+  - Features: Semester selection, optional code/description, duplicate name prevention per semester
+  - Prevents deletion when units exist, displays semester/branch relationships
+  - Admin-only authorization
+
+✅ **Unit Management** - Full CRUD complete:
+  - Routes: /admin/units, /admin/units/new, /admin/units/[unitId]/edit
+  - Features: Subject selection, required name/subject, optional description
+  - Prevents deletion when topics exist, displays subject/semester/branch relationships
+  - Admin-only authorization
+
+✅ **Topic Management** - Full CRUD complete:
+  - Routes: /admin/topics, /admin/topics/new, /admin/topics/[topicId]/edit
+  - Features: Unit selection, required name/unit, optional description
+  - Duplicate topic name prevention within same unit, prevents deletion when quizzes exist
+  - Displays unit/subject/semester/branch relationships, admin-only authorization
+  - Loading/error/empty/success states
+
+✅ **Quiz Management** - Full CRUD complete:
+  - Routes: /admin/quizzes, /admin/quizzes/new, /admin/quizzes/[quizId]/edit
+  - Features: Admin-only auth, title/description/difficulty/timeLimit/passingPercentage fields, topic relationship
+  - Dependency-safe deletion (prevents deletion when questions or attempts exist), loading/error/success states
+  - Admin-only authorization, loading/error/empty/success states
+
+✅ **Question Management** - Full CRUD complete:
+  - Routes: /admin/questions, /admin/questions/new, /admin/questions/[questionId]/edit
+  - Features: Full CRUD implementation with validation, duplicate prevention, dependency safety
+  - Status: FULLY IMPLEMENTED
+
+All admin features follow the established architecture:
+- Admin-only authorization using getProfileClient()
+- Existing Supabase client patterns
+- Standard CRUD operations
+- Loading/error/empty/success states
+- Form validation
+- Duplicate prevention where applicable
+- Dependency-safe deletion
+- Consistent Tailwind/shadcn UI patterns
+
+## 28.4 COMPLETED QUESTION_COUNT TRACKING
+Recent work has been done to implement question_count tracking functionality:
+
+**Intended behavior:**
+- Creating a question increments the associated quiz's question_count
+- Deleting a question decrements the associated quiz's question_count
+- Moving a question from one quiz to another decrements the old quiz count and increments the new quiz count
+- Editing a question without changing quiz_id should not change question counts
+
+**Files involved:**
+- app/admin/questions/new/page.tsx
+- app/admin/questions/[questionId]/edit/page.tsx
+- app/admin/questions/page.tsx
+
+**IMPORTANT:** The implementation has NOT yet been fully verified. The next debugging session MUST verify that the Supabase API used for increment/decrement is actually valid.
+
+There was a suspicious reference in the implementation to something resembling: `supabase.sqlcolumn_name` which must be inspected in the actual source code.
+
+Do not assume the question_count implementation is correct until it has been verified.
+
+## 28.5 CURRENT CODEBASE VERIFICATION STATUS
+The latest full verification was performed AFTER previous agent work completed.
+
+**Current results:**
+
+**TypeScript:**
+- Command: `npx tsc --noEmit`
+- Status: FAIL
+- Errors: 12
+- Main issues:
+  - .next/types module resolution issues
+  - Missing/invalid Supabase .sql usage or typing
+  - Incorrect Promise .data / .error access
+  - Missing React imports
+  - State setter type mismatches
+- Affected areas include:
+  - .next/types/app/admin/page.ts
+  - app/admin/questions/[questionId]/edit/page.tsx
+  - app/admin/questions/page.tsx
+  - app/admin/quizzes/[quizId]/edit/page.tsx
+  - app/admin/quizzes/new/page.tsx
+  - app/admin/topics/new/page.tsx
+  - components/auth/sign-in-form.tsx
+  - components/auth/sign-up-form.tsx
+
+**ESLint:**
+- Command: `npm run lint`
+- Status: FAIL
+- Errors: 28
+- Warnings: 2
+- Main issues:
+  - React Hooks called conditionally
+  - Hooks called after early returns
+  - Missing useEffect dependencies
+  - JSX unescaped quotes/apostrophes
+- Affected areas include:
+  - app/admin/branches/**
+  - app/admin/semesters/**
+  - app/admin/subjects/**
+  - app/admin/units/**
+  - app/admin/topics/**
+  - app/admin/quizzes/**
+  - app/admin/questions/**
+  - app/(student)/quiz-attempts/[attemptId]/page.tsx
+  - components/auth/sign-in-form.tsx
+  - components/auth/sign-up-form.tsx
+
+**Production Build:**
+- Command: `npm run build`
+- Status: FAIL
+- The build is currently blocked by the TypeScript/ESLint issues above.
+
+**IMPORTANT:**
+These errors are NOT fixed yet.
+The project is NOT currently in a clean build state.
+Do not describe the project as production-ready.
+
+## 28.6 IMPORTANT WORKFLOW DISCOVERY
+Previous debugging sessions involved multiple agents and lengthy audits.
+
+We discovered that repeatedly auditing the codebase without fixing errors wastes significant time.
+
+The next session should NOT begin with another broad audit.
+
+Instead, immediately begin targeted fixing.
+
+The next task is to fix the existing TypeScript and ESLint errors and repeatedly verify until:
+- npx tsc --noEmit → 0 errors
+- npm run lint → 0 errors
+- npm run build → SUCCESS
+
+Do not claim completion without actually running the final verification commands.
+
+## 28.7 NEXT SESSION DEBUGGING STRATEGY
+The next session should use the following strategy:
+- Use Fast Mode if available.
+- Use targeted parallel agents only when their file scopes do not overlap.
+- Do not allow multiple agents to modify the same files simultaneously.
+- Avoid repeated broad audits.
+- Fix actual errors immediately.
+- Verify after fixes.
+- Continue iterating until all checks pass.
+
+Suggested division:
+- **Agent 1**: TypeScript errors
+- **Agent 2**: ESLint / React Hooks errors
+- **Agent 3**: JSX escaping and remaining lint issues
+- **Agent 4**: Final verification and monitoring
+
+**IMPORTANT:** Agents must have non-overlapping file scopes to avoid conflicting edits.
+
+## 28.8 NEXT DEBUGGING PROMPT
+The next session should use the targeted fixing prompt prepared at the end of the previous session.
+
+The goal is: "Stop auditing. Start fixing."
+
+The fix loop should be:
+1. TypeScript → Fix → Verify
+2. ESLint → Fix → Verify
+3. Build → Fix → Verify
+4. Repeat until: TypeScript = 0 errors, ESLint = 0 errors, Production build = SUCCESS
+
+Do not:
+- Disable TypeScript
+- Disable ESLint rules
+- Add broad eslint-disable comments
+- Use @ts-ignore or @ts-nocheck to hide errors
+- Edit generated .next files directly
+- Rewrite working features unnecessarily
+- Change database schema unnecessarily
+
+## 28.9 FULL-PROOF TESTING STATUS
+Full-proof functional testing has NOT started yet.
+
+It should begin only after the codebase reaches:
+- TypeScript: 0 errors
+- ESLint: 0 errors
+- Production build: SUCCESS
+
+After that, test systematically:
+
+**A. Authentication**
+- Sign up
+- Sign in
+- Sign out
+- Password reset
+- Password update
+- Protected routes
+- Admin/student authorization
+
+**B. Admin hierarchy**
+Branch → Semester → Subject → Unit → Topic → Quiz → Question
+Test:
+- Create
+- Read
+- Update
+- Delete
+- Validation
+- Duplicate prevention
+- Dependency protection
+
+**C. Quiz system**
+- Quiz creation
+- Question creation
+- Question count
+- Question editing
+- Question deletion
+- Moving questions between quizzes
+- Quiz attempts
+- Timer
+- Scoring
+- Passing percentage
+- Results
+- Attempt history
+
+**D. Student experience**
+- Dashboard
+- Profile
+- Syllabus
+- Academic navigation
+- Free Period
+- Quiz discovery
+- Quiz taking
+- Results
+
+**E. Security**
+- RLS policies
+- Direct URL access
+- Student attempting admin routes
+- Unauthorized data modification
+- Admin access restrictions
+
+**F. Edge cases**
+- Empty database
+- Missing relationships
+- Invalid IDs
+- Duplicate records
+- Dependency deletion
+- Network/database failures
+- Refresh during operations
+- Rapid repeated operations
+
+## 28.10 CURRENT PROJECT STATE
+The ClassQuest academic content hierarchy is now implemented through:
+Branch → Semester → Subject → Unit → Topic → Quiz → Question
+
+The major feature-building phase is substantially complete.
+
+The project is now entering the:
+"Codebase Stabilization → Verification → Full-Proof Testing" phase.
+
+The immediate priority is NOT adding another major feature.
+
+The immediate priority is:
+1. Fix TypeScript errors.
+2. Fix ESLint errors.
+3. Make production build pass.
+4. Verify question_count implementation.
+5. Begin comprehensive functional testing.
+6. Perform security/RLS testing.
+7. Perform UI/responsive testing.
+8. Perform performance testing.
+9. Prepare for release readiness.
+
+==================================================
+FINAL HANDOFF NOTE
+==================================================
+
+When starting the next Claude Code session, read this CLAUDE.md file first.
+
+Do not assume the previous session's fixes are complete.
+
+Start from the latest verified state documented above.
+
+The first task tomorrow is to fix the currently known TypeScript and ESLint errors, not to perform another broad audit.
+
+After all checks pass, proceed to full-proof testing.
+
+**NOTE**: Do not make any code changes other than updating this documentation unless explicitly instructed.

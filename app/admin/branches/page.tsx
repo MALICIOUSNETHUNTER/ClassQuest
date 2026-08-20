@@ -1,0 +1,295 @@
+'use client';
+
+import { getProfileClient } from '@/lib/auth';
+import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+
+export default function BranchesPage() {
+  const [branches, setBranches] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Auth check
+  useEffect(() => {
+    const checkAuth = async () => {
+      const profileResult = await getProfileClient();
+      if (profileResult.error) {
+        // In a real app, we'd redirect, but for now we'll show error state
+        setError('Authentication error: Please sign in');
+        return;
+      }
+
+      const profile = profileResult.data;
+      if (!profile || profile.role !== 'admin') {
+        setError('Access denied: Admin privileges required');
+        return;
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  // Fetch branches
+  useEffect(() => {
+    const fetchBranches = async () => {
+      try {
+        setLoading(true);
+        const supabase = await import('@/lib/supabase').then(
+          (mod) => mod.createServerComponentClient()
+        );
+
+        const { data: branchesData, error: branchesError } = await supabase
+          .from('branches')
+          .select('*')
+          .order('name');
+
+        if (branchesError) throw branchesError;
+        setBranches(branchesData || []);
+      } catch (err: any) {
+        setError(err.message || 'Failed to load branches');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBranches();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this branch?')) return;
+
+    try {
+      const supabase = await import('@/lib/supabase').then(
+        (mod) => mod.createServerComponentClient()
+      );
+
+      // First check if there are any semesters associated with this branch
+      const { data: semestersData, error: semestersError } = await supabase
+        .from('semesters')
+        .select('id')
+        .eq('branch_id', id)
+        .limit(1);
+
+      if (semestersError) throw semestersError;
+
+      if (semestersData && semestersData.length > 0) {
+        throw new Error('Cannot delete branch that has associated semesters. Please delete or reassign semesters first.');
+      }
+
+      // Check for subjects by joining through semesters
+      const { data: branchHasContent, error: branchCheckError } = await supabase
+        .from('branches')
+        .select(`
+          semesters (
+            subjects (
+              id
+            )
+          )
+        `)
+        .eq('id', id)
+        .single();
+
+      if (branchCheckError) throw branchCheckError;
+
+      // Flatten and check if there are any subjects
+      const hasSubjects = branchHasContent?.semesters?.some(semester =>
+        semester.subjects && semester.subjects.length > 0
+      ) || false;
+
+      if (hasSubjects) {
+        throw new Error('Cannot delete branch that has associated subjects. Please delete or reassign subjects first.');
+      }
+
+      // If we get here, it's safe to delete
+      const { error: deleteError } = await supabase
+        .from('branches')
+        .delete()
+        .eq('id', id);
+
+      if (deleteError) throw deleteError;
+
+      // Remove from local state
+      setBranches(branches.filter(branch => branch.id !== id));
+    } catch (err: any) {
+      // Check if it's a validation error we want to show
+      if (err.message && (
+          err.message.includes('Cannot delete branch') ||
+          err.message.includes('associated') ||
+          err.message.includes('semesters') ||
+          err.message.includes('subjects')
+      )) {
+        setError(err.message);
+      } else {
+        setError('Failed to delete branch: ' + (err.message || 'Unknown error'));
+      }
+      console.error('Delete error:', err);
+    }
+  };
+
+  // Handle auth errors in render
+  if (error && (error.includes('Authentication') || error.includes('Access denied'))) {
+    return (
+      <main className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md space-y-6">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+              {error.includes('Authentication') ? 'Please Sign In' : 'Access Denied'}
+            </h2>
+            <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
+              {error.includes('Authentication')
+                ? 'You need to be signed in to access the admin panel.'
+                : 'You do not have permission to access the admin panel.'}
+            </p>
+          </div>
+          <div className="space-x-3">
+            <Link href="/"><Button variant="outline">Go Home</Button></Link>
+            {!error.includes('Authentication') && (
+              <Link href="/auth/sign-in"><Button>Sign In</Button></Link>
+            )}
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // Handle general errors
+  if (error) {
+    return (
+      <main className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md space-y-6">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Oops!</h2>
+            <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
+              {error}
+            </p>
+          </div>
+          <div className="space-x-3">
+            <Link href="/"><Button variant="outline">Go Home</Button></Link>
+            <Link href="/dashboard"><Button>Back to Dashboard</Button></Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // Handle loading state when no error but still loading
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md space-y-6">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-4"></div>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Loading branches...</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Header */}
+      <div className="px-4 py-8 sm:px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                  Branches
+                </h1>
+                <p className="mt-1 text-lg text-gray-600 dark:text-gray-400">
+                  Manage academic branches (e.g., Computer Science, Engineering)
+                </p>
+              </div>
+              <div className="flex-shrink-0 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <span className="font-medium">B</span>
+              </div>
+            </div>
+            <Link href="/admin/branches/new" className="btn-primary">
+              Add New Branch
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {branches.length === 0 ? (
+        <div className="px-4 py-8 sm:px-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center py-12">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-500/20 text-gray-500 mx-auto mb-4">
+                <span className="text-xl">📚</span>
+              </div>
+              <p className="text-lg text-gray-600 dark:text-gray-400 mb-4">
+                No branches found
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Click &apos;Add New Branch&apos; to get started.
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="px-4 py-8 sm:px-6">
+          <div className="max-w-7xl mx-auto overflow-x-auto">
+            <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th scope="col" className="px-6 py-3">
+                    Name
+                  </th>
+                  <th scope="col" className="px-6 py-3">
+                    Code
+                  </th>
+                  <th scope="col" className="px-6 py-3">
+                    Description
+                  </th>
+                  <th scope="col" className="px-6 py-3">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y dark:divide-gray-700">
+                {branches.map((branch) => (
+                  <tr
+                    key={branch.id}
+                    className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">{branch.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{branch.code}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {branch.description || <span className='text-xs text-gray-500 dark:text-gray-400 italic'>No description</span>}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
+                      <Link
+                        href={`/admin/branches/${branch.id}/edit`}
+                        className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                      >
+                        Edit
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(branch.id)}
+                        className="text-sm font-medium text-red-600 hover:text-red-800 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Motivational Footer */}
+      <div className="px-4 py-8 sm:px-6 bg-gray-50 dark:bg-gray-900/50">
+        <div className="max-w-7xl mx-auto text-center">
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            Organize your academic structure effectively to provide students with clear learning pathways.
+          </p>
+        </div>
+      </div>
+    </main>
+  );
+}
